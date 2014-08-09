@@ -13,8 +13,13 @@ class window.AppView extends Backbone.View
   initialize: ->
     @render()
     @model.on 'disable', (button) =>
-      selector = if button is 'all' then 'button' else '.hit-button'
-      @$(selector).attr('disabled', true);
+      @$('button').attr 'disabled', true
+    , @
+    @model.on 'state', (state) =>
+      if state
+        alert state
+        @$('button').remove()
+        new AppView(model: new App()).$el.prependTo 'body'
     , @
 
 

@@ -23,20 +23,21 @@
 
     Hand.prototype.hit = function() {
       this.add(this.deck.pop()).last();
-      return this.sendScore(this.scores());
+      return this.sendScore(this.scores(true));
     };
 
     Hand.prototype.stand = function() {
       return this.trigger('stand');
     };
 
-    Hand.prototype.scores = function() {
+    Hand.prototype.scores = function(app) {
       var hasAce, score;
       hasAce = this.reduce(function(memo, card) {
         return memo || card.get('value') === 1;
       }, false);
       score = this.reduce(function(score, card) {
-        return score + (card.get('revealed') ? card.get('value') : 0);
+        app || (app = card.get('revealed'));
+        return score + (app ? card.get('value') : 0);
       }, 0);
       if (hasAce && score + 10 <= 21) {
         return [score + 10, score];
@@ -47,6 +48,11 @@
 
     Hand.prototype.sendScore = function(score) {
       return this.trigger('score', score, this.length, JSON.stringify(this));
+    };
+
+    Hand.prototype.scoreRequest = function() {
+      var score;
+      return score = this.scores(true);
     };
 
     return Hand;

@@ -23,11 +23,20 @@
 
     AppView.prototype.initialize = function() {
       this.render();
-      return this.model.on('disable', (function(_this) {
+      this.model.on('disable', (function(_this) {
         return function(button) {
-          var selector;
-          selector = button === 'all' ? 'button' : '.hit-button';
-          return _this.$(selector).attr('disabled', true);
+          return _this.$('button').attr('disabled', true);
+        };
+      })(this), this);
+      return this.model.on('state', (function(_this) {
+        return function(state) {
+          if (state) {
+            alert(state);
+            _this.$('button').remove();
+            return new AppView({
+              model: new App()
+            }).$el.prependTo('body');
+          }
         };
       })(this), this);
     };

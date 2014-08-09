@@ -11,21 +11,46 @@
     }
 
     App.prototype.initialize = function() {
-      var deck, player;
+      var dealer, deck, dscore, player, pscore;
       this.set('deck', deck = new Deck());
-      this.set('playerHand', deck.dealPlayer());
-      this.set('dealerHand', deck.dealDealer());
-      this.set('gameState', 'Player Turn');
-      player = this.get('playerHand');
+      this.set('playerHand', player = deck.dealPlayer());
+      this.set('dealerHand', dealer = deck.dealDealer());
+      this.set('dealerScore', (dscore = dealer.scoreRequest() === 21) ? 'blackjack' : dscore);
+      this.set('playerScore', (pscore = player.scoreRequest() === 21) ? 'blackjack' : pscore);
+      if (pscore === 21) {
+        this.checkState();
+      }
+      if (dscore === 21) {
+        this.checkState();
+      }
       player.on('score', (function(_this) {
         return function(score, length, hand) {
           var state;
-          return state = _this.checkScore(score, length, player);
+          state = _this.checkScore(score, length, player);
+          _this.set('playerScore', score[0]);
+          if (state === 'bust') {
+            return _this.checkState();
+          } else if (state === 'stay') {
+            dealer.at(0).flip();
+            return _this.dealerLogic(dealer);
+          }
         };
       })(this), this);
       player.on('stand', (function(_this) {
         return function() {
+          dealer.at(0).flip();
+          _this.dealerLogic(dealer);
           return _this.disable();
+        };
+      })(this), this);
+      dealer.on('score', (function(_this) {
+        return function(score, length, hand) {
+          var state;
+          state = _this.checkScore(score, length, dealer);
+          _this.set('dealerScore', score[0]);
+          if (_this.dealerLogic(dealer) === false) {
+            return _this.checkState();
+          }
         };
       })(this), this);
       return this.on('change:gameState', this.alertState, this);
@@ -53,12 +78,48 @@
           if (length === 2) {
             return 'blackjack';
           } else {
-            return 'win';
+            return 'stay';
           }
         }
       } else {
         return 'continue';
       }
+    };
+
+    App.prototype.dealerLogic = function(hand) {
+      var score;
+      score = this.get('dealerScore');
+      if (score < 17) {
+        hand.hit();
+        return true;
+      } else {
+        return false;
+      }
+    };
+
+    App.prototype.checkState = function() {
+      var dealer, player, state;
+      player = this.get('playerScore');
+      dealer = this.get('dealerScore');
+      state = (function() {
+        switch (false) {
+          case !(player > 21):
+            return 'Player Bust';
+          case !(dealer > 21):
+            return 'Dealer Bust';
+          case dealer !== player:
+            return 'Push';
+          case !(dealer > player):
+            return 'Dealer Win';
+          case !(player > dealer):
+            return 'Player Win';
+          case player !== 'blackjack':
+            return 'Player Blackjack';
+          case dealer !== 'blackjack':
+            return 'Dealer Blackjack';
+        }
+      })();
+      return this.set('gameState', state);
     };
 
     return App;
