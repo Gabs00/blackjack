@@ -1,0 +1,30 @@
+blackjack
+
+keep track of hand score
+Player, can hit, can stand
+  hitting adds a card to the hand
+  should not be able to hit after bust or stand
+Dealer if score is less than 17, hit
+  should not hit if bust
+Blackjack
+  if player and dealer get blackjack, game ends in push
+  if just player gets blackjack, player wins
+  if just dealer gets blackjack, dealer wins
+If bust that hand loses
+
+keeping track of score, main app
+on start, 
+  check for blackjack
+  if no blackjacks, player starts turn
+player sends score after every hit, 
+  if score is 21, don't allow anymore hits, go to dealer
+  if score is bust, anounce to player that he lost
+  if player stands, go to dealer
+
+dealer sends score after every hit
+  have dealer hit, if score is less than 17
+  if dealer bust, anounce to player that he won
+  if dealer score is greater than 17, compare hands with player
+
+compare hands
+  greater score is winner
