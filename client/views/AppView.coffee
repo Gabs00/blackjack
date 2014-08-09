@@ -12,6 +12,11 @@ class window.AppView extends Backbone.View
 
   initialize: ->
     @render()
+    @model.on 'disable', (button) =>
+      selector = if button is 'all' then 'button' else '.hit-button'
+      @$(selector).attr('disabled', true);
+    , @
+
 
   render: ->
     @$el.children().detach()
