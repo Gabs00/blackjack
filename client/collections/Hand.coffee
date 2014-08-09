@@ -2,12 +2,17 @@ class window.Hand extends Backbone.Collection
 
   model: Card
 
-  initialize: (array, @deck, @isDealer) ->
+  initialize: (array, @deck, @isDealer) -> 
 
+  canHit: (status)->
+    @set 'canHit', status
 
   hit: ->
     @add(@deck.pop()).last()
-    @checkScore()
+    @sendScore @scores()
+
+  stand: ->
+    @trigger 'stand'
 
   scores: ->
     # The scores are an array of potential scores.
@@ -19,16 +24,8 @@ class window.Hand extends Backbone.Collection
     score = @reduce (score, card) ->
       score + if card.get 'revealed' then card.get 'value' else 0
     , 0
-    if hasAce then [score, score + 10] else [score]
+    if hasAce and score+10 <= 21 then [score+10, score] else [score]
 
-  checkScore: ->
-    limit = 21
-    score = @scores()
-    if score[0] > limit then @bust()
-    if score[0] is limit or score[1] is limit then @blackjack()
+  sendScore: (score)->
+    @trigger 'score', score, @length, JSON.stringify @
 
-  blackjack: ->
-    @trigger 'blackjack'
-
-  bust: ->
-    @trigger 'bust' 

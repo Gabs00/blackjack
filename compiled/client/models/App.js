@@ -15,13 +15,20 @@
       this.set('deck', deck = new Deck());
       this.set('playerHand', deck.dealPlayer());
       this.set('dealerHand', deck.dealDealer());
+      this.set('gameState', 'Player Turn');
       player = this.get('playerHand');
-      return player.on('bust', (function(_this) {
-        return function() {
-          console.log('received bust');
-          return _this.disableHit();
+      player.on('score', (function(_this) {
+        return function(score, length, hand) {
+          var state;
+          return state = _this.checkScore(score, length, player);
         };
       })(this), this);
+      player.on('stand', (function(_this) {
+        return function() {
+          return _this.disable();
+        };
+      })(this), this);
+      return this.on('change:gameState', this.alertState, this);
     };
 
     App.prototype.disableHit = function() {
@@ -31,6 +38,27 @@
     App.prototype.disable = function(button) {
       button || (button = 'all');
       return this.trigger('disable', button);
+    };
+
+    App.prototype.alertState = function() {
+      return this.trigger('state', this.get('gameState'));
+    };
+
+    App.prototype.checkScore = function(score, length, hand) {
+      if (score[0] >= 21) {
+        this.disable();
+        if (score[0] > 21) {
+          return 'bust';
+        } else {
+          if (length === 2) {
+            return 'blackjack';
+          } else {
+            return 'win';
+          }
+        }
+      } else {
+        return 'continue';
+      }
     };
 
     return App;

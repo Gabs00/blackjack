@@ -17,9 +17,17 @@
       this.isDealer = isDealer;
     };
 
+    Hand.prototype.canHit = function(status) {
+      return this.set('canHit', status);
+    };
+
     Hand.prototype.hit = function() {
       this.add(this.deck.pop()).last();
-      return this.checkScore();
+      return this.sendScore(this.scores());
+    };
+
+    Hand.prototype.stand = function() {
+      return this.trigger('stand');
     };
 
     Hand.prototype.scores = function() {
@@ -30,31 +38,15 @@
       score = this.reduce(function(score, card) {
         return score + (card.get('revealed') ? card.get('value') : 0);
       }, 0);
-      if (hasAce) {
-        return [score, score + 10];
+      if (hasAce && score + 10 <= 21) {
+        return [score + 10, score];
       } else {
         return [score];
       }
     };
 
-    Hand.prototype.checkScore = function() {
-      var limit, score;
-      limit = 21;
-      score = this.scores();
-      if (score[0] > limit) {
-        this.bust();
-      }
-      if (score[0] === limit || score[1] === limit) {
-        return this.blackjack();
-      }
-    };
-
-    Hand.prototype.blackjack = function() {
-      return this.trigger('blackjack');
-    };
-
-    Hand.prototype.bust = function() {
-      return this.trigger('bust');
+    Hand.prototype.sendScore = function(score) {
+      return this.trigger('score', score, this.length, JSON.stringify(this));
     };
 
     return Hand;
